@@ -1,0 +1,30 @@
+
+ {
+ "name": "html-purify-styles",
+  "version": "1.0.0",
+  "description": "html string style attributes will be removed , moved to style tag return with same string ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/machi-projects/html-purify-styles.git"
+  },
+  "keywords": [
+    "purify",
+    "html",
+    "styles",
+    "attributes",
+    "into",
+    "inline",
+    "style",
+    "tag"
+  ],
+  "author": "iniankarthick",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/machi-projects/html-purify-styles/issues"
+  },
+  "homepage": "https://github.com/machi-projects/html-purify-styles#readme"
+}
