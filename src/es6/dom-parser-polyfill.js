@@ -1,6 +1,6 @@
- let parser = (function(DOMParser) {
- 
-	let DOMParser_proto = DOMParser.prototype , real_parseFromString = DOMParser_proto.parseFromString ;
+export default function() {
+	
+	let DOMParser_proto = DOMParser.prototype, real_parseFromString = DOMParser_proto.parseFromString ;
 
 	// Firefox/Opera/IE throw errors on unsupported types
 	try {
@@ -27,6 +27,4 @@
 			return real_parseFromString.apply(this, arguments);
 		}
 	};
-}(DOMParser));
-
-export default parser;
+}
