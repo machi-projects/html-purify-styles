@@ -3,7 +3,6 @@
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 (function (DOMParser) {
-	"use strict";
 
 	var DOMParser_proto = DOMParser.prototype,
 	    real_parseFromString = DOMParser_proto.parseFromString;
@@ -32,14 +31,14 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 	};
 })(DOMParser);
 
-var PurifyHtml = function () {
-	function PurifyHtml(html) {
-		_classCallCheck(this, PurifyHtml);
+var PurifyHtmlStyles = function () {
+	function PurifyHtmlStyles(html) {
+		_classCallCheck(this, PurifyHtmlStyles);
 
 		this.xml = html;
 	}
 
-	PurifyHtml.prototype.parser = function parser(xml) {
+	PurifyHtmlStyles.prototype.parser = function parser(xml) {
 		var xmlDoc = null;
 		if (window.DOMParser) {
 			var parser = new DOMParser();
@@ -74,12 +73,12 @@ var PurifyHtml = function () {
   	 */
 	};
 
-	PurifyHtml.prototype.createKey = function createKey() {
+	PurifyHtmlStyles.prototype.createKey = function createKey() {
 		var randomKey = Math.random().toString(36).substr(2, 6) + Math.random().toString(36).substr(2, 4);
 		return "css__" + randomKey + "__class";
 	};
 
-	PurifyHtml.prototype.purifyStyle = function purifyStyle() {
+	PurifyHtmlStyles.prototype.run = function run() {
 		//Combine styles ....have to handle it..
 
 		var myXmlDoc = this.parser("<div id='purifyStyleMyStyler'></div>");
@@ -114,5 +113,5 @@ var PurifyHtml = function () {
 		return purifyStyleMyStyler.innerHTML;
 	};
 
-	return PurifyHtml;
+	return PurifyHtmlStyles;
 }();
