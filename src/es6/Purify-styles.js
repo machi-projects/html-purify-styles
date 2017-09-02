@@ -2,7 +2,7 @@ import createDomParserPloyfill from './dom-parser-ployfill';
 
 createDomParserPloyfill();
 
-export default class PurifyHtml
+export default class PurifyHtmlStyles
 {
 	constructor(html)
 	{
@@ -52,7 +52,7 @@ export default class PurifyHtml
 		return "css__"+randomKey+"__class";
 	}
 	
-	purifyStyle()
+	run()
 	{
 		//Combine styles ....have to handle it..
 		
