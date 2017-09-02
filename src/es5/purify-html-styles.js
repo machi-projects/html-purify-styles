@@ -2,15 +2,10 @@
 
 exports.__esModule = true;
 
-var _domParserPloyfill = require("./dom-parser-ployfill");
-
-var _domParserPloyfill2 = _interopRequireDefault(_domParserPloyfill);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var domParserPloyfill = require("./dom-parser-ployfill");
+domParserPloyfill();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-(0, _domParserPloyfill2.default)();
 
 var PurifyHtmlStyles = function () {
 	function PurifyHtmlStyles(html) {
