@@ -1,6 +1,8 @@
-import DOMParser from './DOMParser';
+import createDomParserPloyfill from './dom-parser-ployfill';
 
-class PurifyHtmlStyles
+createDomParserPloyfill();
+
+export default class PurifyHtml
 {
 	constructor(html)
 	{
@@ -50,7 +52,7 @@ class PurifyHtmlStyles
 		return "css__"+randomKey+"__class";
 	}
 	
-	run()
+	purifyStyle()
 	{
 		//Combine styles ....have to handle it..
 		
@@ -88,5 +90,3 @@ class PurifyHtmlStyles
 	}
 	
 }
-
-export default PurifyHtmlStyles;
