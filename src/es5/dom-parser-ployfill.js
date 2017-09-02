@@ -1,7 +1,5 @@
 "use strict";
 
-exports.__esModule = true;
-
 exports.default = function () {
 
 	var DOMParser_proto = DOMParser.prototype,
