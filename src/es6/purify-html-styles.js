@@ -1,4 +1,4 @@
-import createDomParserPloyfill from './dom-parser-ployfill';
+import createDomParserPloyfill from './dom-parser-polyfill';
 
 createDomParserPloyfill();
 
@@ -42,50 +42,164 @@ export default class PurifyHtmlStyles
                 }
             }
            
-
 		 */
 	}
 	  
 	createKey()
 	{
-		let randomKey = ( Math.random().toString(36).substr(2,6) ) + ( Math.random().toString(36).substr(2,4) );
-		return "css__"+randomKey+"__class";
+		let randomKey = ( Math.random().toString(36).substr(2,6) ) ;
+		return "sty__"+randomKey+"__cls";
 	}
-	
+
+    
+	groupStyleTagRules (styleTags) {
+
+		let styleRules = {}
+		let selectorsList = [];
+		let duplicateFinder = [];
+
+		for(var i=0;i<styleTags.length;i++)
+		{
+			let styleTag = styleTags[i];
+			let cssRules = styleTag.sheet.cssRules || styleTag.sheet.rules;
+
+			for(var j=0 ,len=cssRules.length;j<len;j++)
+			{
+				let cssRule = cssRules[j];
+
+				let ruleSelector = cssRule.selectorText;
+				
+				
+				let styleRule = styleRules[ ruleSelector ];
+				let styleCssTxt = cssRule.style.cssText;
+				
+				//duplicateFinder[ ]  -- have to be added..
+				
+				styleRules[ ruleSelector  ] = (styleRule ? styleRule + styleCssTxt : styleCssTxt ) ;
+
+			}	
+
+		}	
+
+		for(var selectorProp in styleRules )
+		{
+			selectorsList.push( selectorProp );
+		}
+
+		return { selectors : selectorsList , rules :  styleRules } ;
+	}
+
+	mergeStyles(stylesString)
+	{
+
+		let cssStyles = stylesString.trim().split(";");
+		let jsonStyles = {};
+		for(var k=0; k<cssStyles.length; k++)
+		{
+			let cssStyle = cssStyles[k].trim();
+			if( cssStyle ){
+				let cssProperties = cssStyle.split(":");
+				let cssPropertyName = cssProperties[0].trim();
+				let cssPropertyValue = cssProperties[1].trim();
+				jsonStyles[ cssPropertyName ] = cssPropertyValue; 
+			}
+			
+		}	
+		
+		let cssString = "";
+		// jsonStyles would be the JavaScript object representing your CSS.
+		for (var cssPropertyName in jsonStyles) {
+
+			// In this case, it is also the CSS selector.
+			cssString += cssPropertyName + ": " + jsonStyles[cssPropertyName] + ";";
+		}
+
+		return cssString;
+
+	}
+    
+    
 	run()
 	{
-		//Combine styles ....have to handle it..
 		
 		let myXmlDoc = this.parser( "<div id='purifyStyleMyStyler'></div>");
 
 		var purifyStyleMyStyler=  myXmlDoc.getElementById("purifyStyleMyStyler")
 		purifyStyleMyStyler.innerHTML = this.xml;
 
-		//var stylingSheet = myXmlDoc.querySelectorAll('[data-css-purify-styler]')[0]; 
-		let stylingSheet = myXmlDoc.createElement('style');
-		stylingSheet.type = 'text/css';
-		stylingSheet.setAttribute("data-css-purify-styler", Date.now());
-		stylingSheet.appendChild(document.createTextNode(""));
-
-		let cssStyleSheet = "";
+		//get previous styles rules from dom...
+		let oldStyledSheets = myXmlDoc.querySelectorAll('[data-css-purify-styler]'); 
+		let oldStylesList = Object.assign({},this.groupStyleTagRules( oldStyledSheets ));
+		let oldStyleRulesSelectors = oldStylesList.selectors;
+		let oldStyleRules = oldStylesList.rules;
+		
 		var unWantedStyleTags = myXmlDoc.querySelectorAll("[style]");
 		for(var i=0; i < unWantedStyleTags.length; i++ )
 		{
 			var styledTag = unWantedStyleTags[ i ];
 			var styledCssText = styledTag.getAttribute("style");
 			if( styledCssText ){
-				var stylingKey = this.createKey();
 				
-				cssStyleSheet += ( '.'+stylingKey + "{" + styledCssText + "}" + "\n");
-				let classNames = styledTag.className || '';
-				styledTag.className += ( classNames.indexOf( stylingKey ) == -1 ? stylingKey : '' );
+				let classNames = (styledTag.className || '').trim();
+				
+				//Find old classNames...
+				let classNamesToSelectors = ("."+classNames.replace(/ /g, " .")).split(" ");
+				let oldClassName = '';
+				let foundClassName = classNamesToSelectors.some((r)=>{
+					let whichIndex = oldStyleRulesSelectors.indexOf(r);
+					oldClassName = oldStyleRulesSelectors[ whichIndex ];
+					return whichIndex >= 0;
+				})
+				
+				//generate new className if not exists in  old styles 
+				var stylingSelectorKey = oldClassName ? oldClassName : '.'+this.createKey();
+				
+				//combine with old styles 
+				let oldStylesCssText = (oldStyleRules[ oldClassName ] || '');
+				oldStyleRules[ stylingSelectorKey ] = oldStylesCssText ? this.mergeStyles( oldStylesCssText + styledCssText ) : styledCssText;
+				
+				
+				//Add/update classsName
+				let classNamesSeprator = classNames ? ' ' : '';
+				let stylingSelectorKey1 = stylingSelectorKey.replace('.','');
+				styledTag.className += ( classNames.indexOf( stylingSelectorKey1 ) == -1 ? classNamesSeprator+stylingSelectorKey1 : '' );
+				
 			}
+			
+			//Remove style attributes...
 			styledTag.removeAttribute("style");
 		}	
 		
-		stylingSheet.innerHTML = cssStyleSheet;
-		purifyStyleMyStyler.appendChild( stylingSheet )
+		
+		//Create new styler..
+		let cssStyleSheet = "";
+		for(var cssSelector in oldStyleRules)
+		{
+			let cssProperties = oldStyleRules[  cssSelector ];
+			cssStyleSheet += ( cssSelector + "{" + cssProperties + "}" + "\n");
+		}
+		
+		//Add stylesheet to dom...
+		let stylingSheet = myXmlDoc.createElement('style');
+			stylingSheet.type = 'text/css';
+			stylingSheet.setAttribute("data-css-purify-styler", Date.now());
+			//webkit bugfix...
+			stylingSheet.appendChild(document.createTextNode(""));
+			stylingSheet.innerHTML = cssStyleSheet;
+		
+		//Remove previous style tags from dom...
+		Array.prototype.forEach.call( oldStyledSheets, function( node ) {
+		    node.parentNode.removeChild( node );
+		});
+		
+		/*for (var j = elem.length-1; j >= 0; j--) {
+		    if (elem[j].parentNode) {
+		        elem[j].parentNode.removeChild(elem[j]);
+		    }
+		}*/
 
+		purifyStyleMyStyler.appendChild( stylingSheet );
+		
 		return  purifyStyleMyStyler.innerHTML;
 	}
 	
